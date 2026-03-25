@@ -1,0 +1,42 @@
+name: Deploy - Kubernetes
+
+on:
+  workflow_run:
+    workflows: ["Docker - Build & Scan"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    environment: staging
+    if: {{ gh "github.event.workflow_run.conclusion == 'success'" }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+      - name: Deploy
+        run: |
+          kubectl set image deployment/app \
+            app={{ gh "github.repository" }}:{{ gh "github.sha" }} \
+            --namespace=staging
+        env:
+          KUBECONFIG_DATA: {{ gh "secrets.KUBECONFIG_STAGING" }}
+
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production
+    needs: deploy-staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+      - name: Deploy
+        run: |
+          kubectl set image deployment/app \
+            app={{ gh "github.repository" }}:{{ gh "github.sha" }} \
+            --namespace=production
+        env:
+          KUBECONFIG_DATA: {{ gh "secrets.KUBECONFIG_PROD" }}

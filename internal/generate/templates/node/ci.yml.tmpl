@@ -1,0 +1,48 @@
+name: CI - Node.js
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: '{{ if .UseYarn }}yarn{{ else }}npm{{ end }}'
+      - run: {{ if .UseYarn }}yarn install --frozen-lockfile{{ else }}npm ci{{ end }}
+      - run: {{ if .UseYarn }}yarn lint{{ else }}npm run lint{{ end }}
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: {{ gh "matrix.node-version" }}
+          cache: '{{ if .UseYarn }}yarn{{ else }}npm{{ end }}'
+      - run: {{ if .UseYarn }}yarn install --frozen-lockfile{{ else }}npm ci{{ end }}
+      - run: {{ if .UseYarn }}yarn test --coverage{{ else }}npm test -- --coverage{{ end }}
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: '{{ if .UseYarn }}yarn{{ else }}npm{{ end }}'
+      - run: {{ if .UseYarn }}yarn install --frozen-lockfile{{ else }}npm ci{{ end }}
+      - run: {{ if .UseYarn }}yarn build{{ else }}npm run build{{ end }}

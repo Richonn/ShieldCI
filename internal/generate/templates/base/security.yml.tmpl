@@ -1,0 +1,57 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+{{ if .Stack.EnableGitleaks -}}
+  gitleaks:
+    name: Gitleaks - Secret Detection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: {{ gh "secrets.GITHUB_TOKEN" }}
+{{ end -}}
+
+{{ if .Stack.EnableSAST -}}
+{{ if eq .Stack.SASTTool "codeql" -}}
+  codeql:
+    name: CodeQL - Static Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: {{ .Stack.Language }}
+      - uses: github/codeql-action/autobuild@v3
+      - uses: github/codeql-action/analyze@v3
+{{ else if eq .Stack.SASTTool "semgrep" -}}
+  semgrep:
+    name: Semgrep — Static Analysis
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - run: semgrep ci --config=auto
+        env:
+          SEMGREP_APP_TOKEN: {{ gh "secrets.SEMGREP_APP_TOKEN" }}
+{{ end -}}
+{{ end }}

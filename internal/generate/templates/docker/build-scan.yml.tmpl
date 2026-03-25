@@ -1,0 +1,52 @@
+name: Docker - Build & Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+  packages: write
+
+jobs:
+  build-and-scan:
+    name: Build & Trivy Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: {{ gh "github.repository" }}:{{ gh "github.sha" }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          outputs: type=docker,dest=/tmp/image.tar
+
+      - name: Load image
+        run: docker load --input /tmp/image.tar
+
+{{ if .Stack.EnableTrivy -}}
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@0.30.0
+        with:
+          image-ref: '{{ gh "github.repository" }}:{{ gh "github.sha" }}'
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Upload trivy results to Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+{{ end -}}

@@ -1,0 +1,44 @@
+name: CI - Python
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install ruff
+      - run: ruff check .
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: {{ gh "matrix.python-version" }}
+      - run: {{ if .UsePoetry }}pip install poetry && poetry install{{ else }}pip install -r requirements.txt{{ end }}
+      - run: {{ if .UsePoetry }}poetry run pytest --cov{{ else }}pytest --cov{{ end }}
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: {{ if .UsePoetry }}pip install poetry && poetry build{{ else }}pip install build && python -m build{{ end }}

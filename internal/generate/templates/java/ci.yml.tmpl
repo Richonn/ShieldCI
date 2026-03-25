@@ -1,0 +1,26 @@
+name: CI - Java
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: '{{ if .UseMaven }}maven{{ else }}gradle{{ end }}'
+      - name: Build and test
+        run: {{ if .UseMaven }}mvn --batch-mode verify{{ else }}./gradlew build{{ end }}
+      - name: Upload coverage (JaCoCo)
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: {{ if .UseMaven }}target/site/jacoco{{ else }}build/reports/jacoco{{ end }}
