@@ -1,13 +1,10 @@
-name: CI - Java
+name: Test
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_call:
 
 jobs:
-  build-and-test:
+  test:
     name: Build & Test
     runs-on: ubuntu-latest
     steps:

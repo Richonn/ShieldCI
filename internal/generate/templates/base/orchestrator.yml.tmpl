@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+{{ if ne .Stack.Language "unknown" -}}
+  lint:
+    uses: ./.github/workflows/lint.yml
+
+  test:
+    uses: ./.github/workflows/test.yml
+
+{{ end -}}
+  security:
+    uses: ./.github/workflows/security.yml
+
+{{ if .Stack.HasDocker -}}
+  docker:
+    needs: [{{ if ne .Stack.Language "unknown" }}lint, test, {{ end }}security]
+    uses: ./.github/workflows/docker.yml
+
+{{ end -}}
+{{ if .Stack.HasK8s -}}
+  deploy:
+    needs: [docker]
+    uses: ./.github/workflows/k8s-deploy.yml
+{{ end -}}

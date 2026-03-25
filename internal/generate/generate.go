@@ -51,25 +51,45 @@ func Generate(stack *detect.StackConfig) ([]GeneratedFile, error) {
 
 	var files []GeneratedFile
 
-	f, err := render("templates/base/security.yml.tmpl", "security.yml", data)
+	f, err := render("templates/base/orchestrator.yml.tmpl", "ci.yml", data)
 	if err != nil {
 		return nil, err
 	}
 	files = append(files, f)
 
-	var langFile GeneratedFile
-	langTemplates := map[string]string{
-		"node":   "templates/node/ci.yml.tmpl",
-		"python": "templates/python/ci.yml.tmpl",
-		"java":   "templates/java/ci.yml.tmpl",
-		"go":     "templates/go/ci.yml.tmpl",
+	f, err = render("templates/base/security.yml.tmpl", "security.yml", data)
+	if err != nil {
+		return nil, err
 	}
-	if tmplPath, ok := langTemplates[stack.Language]; ok {
-		langFile, err = render(tmplPath, "ci.yml", data)
+	files = append(files, f)
+
+	langLintTemplates := map[string]string{
+		"node":   "templates/node/lint.yml.tmpl",
+		"python": "templates/python/lint.yml.tmpl",
+		"java":   "templates/java/lint.yml.tmpl",
+		"go":     "templates/go/lint.yml.tmpl",
+	}
+	langTestTemplates := map[string]string{
+		"node":   "templates/node/test.yml.tmpl",
+		"python": "templates/python/test.yml.tmpl",
+		"java":   "templates/java/test.yml.tmpl",
+		"go":     "templates/go/test.yml.tmpl",
+	}
+
+	if tmplPath, ok := langLintTemplates[stack.Language]; ok {
+		f, err = render(tmplPath, "lint.yml", data)
 		if err != nil {
 			return nil, err
 		}
-		files = append(files, langFile)
+		files = append(files, f)
+	}
+
+	if tmplPath, ok := langTestTemplates[stack.Language]; ok {
+		f, err = render(tmplPath, "test.yml", data)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, f)
 	}
 
 	if stack.HasDocker {

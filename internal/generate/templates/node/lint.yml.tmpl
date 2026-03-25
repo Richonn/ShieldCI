@@ -1,0 +1,17 @@
+name: Lint
+
+on:
+  workflow_call:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: '{{ if .UseYarn }}yarn{{ else }}npm{{ end }}'
+      - run: {{ if .UseYarn }}yarn install --frozen-lockfile{{ else }}npm ci{{ end }}
+      - run: {{ if .UseYarn }}yarn lint{{ else }}npm run lint{{ end }}

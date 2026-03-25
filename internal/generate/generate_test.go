@@ -25,8 +25,8 @@ func TestGenerateGoStack(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(files) != 2 {
-		t.Errorf("expected 2 files, got %d", len(files))
+	if len(files) != 4 {
+		t.Errorf("expected 4 files, got %d", len(files))
 	}
 }
 
@@ -35,8 +35,8 @@ func TestGenerateNodeWithDocker(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(files) != 3 {
-		t.Errorf("expected 3 files, got %d", len(files))
+	if len(files) != 5 {
+		t.Errorf("expected 5 files, got %d", len(files))
 	}
 }
 
@@ -45,8 +45,8 @@ func TestGenerateWithK8s(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(files) != 4 {
-		t.Errorf("expected 4 files, got %d", len(files))
+	if len(files) != 6 {
+		t.Errorf("expected 6 files, got %d", len(files))
 	}
 }
 
@@ -55,8 +55,8 @@ func TestGenerateUnknownLang(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(files) != 1 {
-		t.Errorf("expected 1 file (security only), got %d", len(files))
+	if len(files) != 2 {
+		t.Errorf("expected 2 files, got %d", len(files))
 	}
 }
 
@@ -65,8 +65,13 @@ func TestGitleaksInSecurity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	content := string(files[0].Content)
-	if !strings.Contains(content, "gitleaks") {
+	var securityFile string
+	for _, f := range files {
+		if f.Path == "security.yml" {
+			securityFile = string(f.Content)
+		}
+	}
+	if !strings.Contains(securityFile, "gitleaks") {
 		t.Error("expected gitleaks job in security.yml")
 	}
 }
