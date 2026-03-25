@@ -27,12 +27,7 @@ jobs:
         uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: shieldci:${{ github.sha }}
-          format: sarif
-          output: trivy-results.sarif
+          format: table
           severity: CRITICAL,HIGH
           ignore-unfixed: true
-      - name: Upload Trivy results
-        uses: github/codeql-action/upload-sarif@v4
-        if: always() && github.event_name != 'pull_request'
-        with:
-          sarif_file: trivy-results.sarif
+          exit-code: '1'
