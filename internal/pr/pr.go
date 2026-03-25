@@ -119,7 +119,7 @@ func ensureLabels(ctx context.Context, client *github.Client, owner, repo string
 		{"ci-cd", "e4e669"},
 	}
 	for _, l := range labels {
-		client.Issues.CreateLabel(ctx, owner, repo, &github.Label{
+		_, _, _ = client.Issues.CreateLabel(ctx, owner, repo, &github.Label{
 			Name:  github.String(l.name),
 			Color: github.String(l.color),
 		})

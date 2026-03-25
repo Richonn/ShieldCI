@@ -113,7 +113,9 @@ func TestDockerDisabled(t *testing.T) {
 
 func TestK8sDir(t *testing.T) {
 	dir := t.TempDir()
-	os.MkdirAll(filepath.Join(dir, "k8s"), 0755)
+	if err := os.MkdirAll(filepath.Join(dir, "k8s"), 0755); err != nil {
+		t.Fatal(err)
+	}
 	stack, _ := Detect(cfg(dir, "auto", "auto", false))
 	if !stack.HasK8s { t.Error("expected HasK8s = true") }
 }

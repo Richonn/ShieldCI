@@ -65,7 +65,7 @@ func (c *Config) WriteOutput(key, value string) error {
 	if err != nil {
 		return fmt.Errorf("open GITHUB_OUTPUT: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	_, err = fmt.Fprintf(f, "%s=%s\n", key, value)
 	return err
 }
