@@ -8,7 +8,7 @@ branding:
 
 inputs:
   github-token:
-    description: 'GitHub token for creating branches and PRs'
+    description: 'GitHub token (PAT with repo + workflow scopes) for creating branches and PRs'
     required: true
   language:
     description: 'Language override: node|python|java|go|auto'
@@ -50,37 +50,22 @@ inputs:
 outputs:
   pr-url:
     description: 'URL of the created pull request'
-    value: ${{ steps.shieldci.outputs.pr-url }}
   detected-stack:
     description: 'Detected stack as JSON'
-    value: ${{ steps.shieldci.outputs.detected-stack }}
   generated-files:
-    description: 'Newline-separated list of generated file paths'
-    value: ${{ steps.shieldci.outputs.generated-files }}
+    description: 'Comma-separated list of generated file paths'
 
 runs:
-  using: composite
-  steps:
-    - name: Setup Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.25'
-        cache: false
-    - name: Install ShieldCI
-      shell: bash
-      run: go install github.com/Richonn/shieldci/cmd/shieldci@main
-    - name: Run ShieldCI
-      id: shieldci
-      shell: bash
-      run: shieldci
-      env:
-        SHIELDCI_TOKEN: ${{ inputs.github-token }}
-        INPUT_LANGUAGE: ${{ inputs.language }}
-        INPUT_DOCKER: ${{ inputs.docker }}
-        INPUT_KUBERNETES: ${{ inputs.kubernetes }}
-        INPUT_ENABLE_TRIVY: ${{ inputs.enable-trivy }}
-        INPUT_ENABLE_GITLEAKS: ${{ inputs.enable-gitleaks }}
-        INPUT_ENABLE_SAST: ${{ inputs.enable-sast }}
-        INPUT_SAST_TOOL: ${{ inputs.sast-tool }}
-        INPUT_BRANCH_NAME: ${{ inputs.branch-name }}
-        INPUT_PR_TITLE: ${{ inputs.pr-title }}
+  using: docker
+  image: Dockerfile
+  env:
+    SHIELDCI_TOKEN: ${{ inputs.github-token }}
+    INPUT_LANGUAGE: ${{ inputs.language }}
+    INPUT_DOCKER: ${{ inputs.docker }}
+    INPUT_KUBERNETES: ${{ inputs.kubernetes }}
+    INPUT_ENABLE_TRIVY: ${{ inputs.enable-trivy }}
+    INPUT_ENABLE_GITLEAKS: ${{ inputs.enable-gitleaks }}
+    INPUT_ENABLE_SAST: ${{ inputs.enable-sast }}
+    INPUT_SAST_TOOL: ${{ inputs.sast-tool }}
+    INPUT_BRANCH_NAME: ${{ inputs.branch-name }}
+    INPUT_PR_TITLE: ${{ inputs.pr-title }}
