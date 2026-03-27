@@ -53,9 +53,23 @@ func CreateOrUpdatePR(ctx context.Context, cfg *config.Config,
 		return nil, err
 	}
 
-	ensureLabels(ctx, client, owner, repo)
+	if prNumber := extractPRNumber(prURL); prNumber > 0 {
+		ensureLabels(ctx, client, owner, repo)
+		_, _, _ = client.Issues.AddLabelsToIssue(ctx, owner, repo, prNumber, []string{"automated", "ci-cd"})
+	}
 
 	return buildResult(prURL, stack, files), nil
+}
+
+func extractPRNumber(prURL string) int {
+	var number int
+	for i := len(prURL) - 1; i >= 0; i-- {
+		if prURL[i] == '/' {
+			fmt.Sscanf(prURL[i+1:], "%d", &number)
+			return number
+		}
+	}
+	return 0
 }
 
 func upsertFile(ctx context.Context, client *github.Client, owner, repo, path, branch string, content []byte) error {

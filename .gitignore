@@ -2,3 +2,4 @@ shieldci
 dist/
 *.test
 coverage.out
+TODO.md
