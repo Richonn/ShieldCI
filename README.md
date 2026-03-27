@@ -6,13 +6,19 @@
 
 ## Quick start
 
+**1. Create a Personal Access Token** with scopes `repo` + `workflow` and store it as a secret (e.g. `GH_TOKEN`) in your repository.
+
+**2. Add the action to your workflow:**
+
 ```yaml
 - uses: Richonn/ShieldCI@v1
   with:
-    github-token: ${{ secrets.GITHUB_TOKEN }}
+    github-token: ${{ secrets.GH_TOKEN }}
 ```
 
 ShieldCI will detect your stack, generate the appropriate workflows, and open a PR.
+
+> **Why a PAT?** GitHub blocks writes to `.github/workflows/` for `GITHUB_TOKEN` by design. A PAT with `workflow` scope is required to create workflow files.
 
 ## Inputs
 
@@ -35,7 +41,7 @@ ShieldCI will detect your stack, generate the appropriate workflows, and open a 
 |---|---|
 | `pr-url` | URL of the created pull request |
 | `detected-stack` | Detected stack as JSON |
-| `generated-files` | Newline-separated list of generated file paths |
+| `generated-files` | Comma-separated list of generated file paths |
 
 ## Supported stacks
 
