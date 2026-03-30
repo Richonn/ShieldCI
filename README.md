@@ -34,6 +34,7 @@ ShieldCI will detect your stack, generate the appropriate workflows, and open a 
 | `sast-tool` | ❌ | `codeql` | SAST tool: `codeql` or `semgrep` |
 | `branch-name` | ❌ | `shieldci/generated-workflows` | Branch to push generated workflows to |
 | `pr-title` | ❌ | `[ShieldCI] Add CI/CD DevSecOps pipeline` | PR title |
+| `dry-run` | ❌ | `false` | If `true`, print generated workflows to the Job Summary without creating a branch or PR |
 
 ## Outputs
 
@@ -81,11 +82,24 @@ Docker and Kubernetes workflows are generated automatically when detected.
 - **Trivy** — container vulnerability scanning with SARIF upload to GitHub Security tab
 - **CodeQL / Semgrep** — static analysis (SAST)
 
+## Dry-run mode
+
+Set `dry-run: "true"` to preview the generated workflows in the GitHub Actions Job Summary without touching your repository:
+
+```yaml
+- uses: Richonn/ShieldCI@v1
+  with:
+    github-token: ${{ secrets.GH_TOKEN }}
+    dry-run: "true"
+```
+
+The Job Summary will display each generated workflow file as a fenced YAML block. No branch or PR is created.
+
 ## Roadmap
 
 - [ ] Rust support
 - [ ] Monorepo support
-- [ ] `--dry-run` mode
+- [x] `dry-run` mode
 - [ ] SBOM via Syft
 
 ## License
