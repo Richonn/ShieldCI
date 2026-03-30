@@ -41,6 +41,13 @@ func run() error {
 	}
 	log.Printf("generated %d workflows file(s)", len(files))
 
+	if cfg.DryRun {
+		if err := dryRun(cfg, files); err != nil {
+			return fmt.Errorf("dry-run detection: %w", err)
+		}
+		return nil
+	}
+
 	body := generate.PRBody(stack, files)
 
 	result, err := pr.CreateOrUpdatePR(ctx, cfg, stack, files, body)
@@ -59,5 +66,20 @@ func run() error {
 		return fmt.Errorf("write output generated-files: %w", err)
 	}
 
+	return nil
+}
+
+func dryRun(cfg *config.Config, files []generate.GeneratedFile) error {
+	var summary string
+	for _, f := range files {
+		summary += "## "
+		summary += f.Path
+		summary += "\n```yaml\n"
+		summary += string(f.Content)
+		summary += "```\n\n"
+	}
+	if err := cfg.WriteSummary(summary); err != nil {
+		return fmt.Errorf("write summary: %w", err)
+	}
 	return nil
 }

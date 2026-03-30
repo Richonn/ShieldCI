@@ -46,6 +46,10 @@ inputs:
     description: 'Title for the created PR'
     required: false
     default: '[ShieldCI] Add CI/CD DevSecOps pipeline'
+  dry-run:
+    description: 'If true, print generated workflows to the Job Summary without creating a branch or PR'
+    required: false
+    default: false
 
 outputs:
   pr-url:
@@ -69,3 +73,4 @@ runs:
     INPUT_SAST_TOOL: ${{ inputs.sast-tool }}
     INPUT_BRANCH_NAME: ${{ inputs.branch-name }}
     INPUT_PR_TITLE: ${{ inputs.pr-title }}
+    INPUT_DRY_RUN: ${{ inputs.dry-run }}

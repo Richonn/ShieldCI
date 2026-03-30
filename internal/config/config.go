@@ -7,20 +7,22 @@ import (
 )
 
 type Config struct {
-	GithubToken string
-	Language string
-	Docker string
-	Kubernetes bool
-	EnableTrivy bool
+	GithubToken    string
+	Language       string
+	Docker         string
+	Kubernetes     bool
+	EnableTrivy    bool
 	EnableGitleaks bool
-	EnableSAST bool
-	SASTTool string
-	BranchName string
-	PRTitle string
-	RepoOwner string
-	RepoName string
-	WorkspaceDir string
-	OutputFile string
+	EnableSAST     bool
+	SASTTool       string
+	BranchName     string
+	PRTitle        string
+	DryRun         bool
+	RepoOwner      string
+	RepoName       string
+	WorkspaceDir   string
+	OutputFile     string
+	SummaryFile    string
 }
 
 func Load() (*Config, error) {
@@ -43,6 +45,8 @@ func Load() (*Config, error) {
 	c.BranchName = getEnvDefault("INPUT_BRANCH_NAME", "shieldci/generated-workflows")
 	c.PRTitle = getEnvDefault("INPUT_PR_TITLE", "[ShieldCI] Add CI/CD DevSecOps pipeline")
 
+	c.DryRun = parseBool(getEnvDefault("INPUT_DRY_RUN", "false"))
+
 	repo := os.Getenv("GITHUB_REPOSITORY")
 	parts := strings.SplitN(repo, "/", 2)
 	if len(parts) != 2 {
@@ -53,6 +57,7 @@ func Load() (*Config, error) {
 
 	c.WorkspaceDir = getEnvDefault("GITHUB_WORKSPACE", "/github/workspace")
 	c.OutputFile = os.Getenv("GITHUB_OUTPUT")
+	c.SummaryFile = os.Getenv("GITHUB_STEP_SUMMARY")
 
 	return c, nil
 }
@@ -67,6 +72,19 @@ func (c *Config) WriteOutput(key, value string) error {
 	}
 	defer func() { _ = f.Close() }()
 	_, err = fmt.Fprintf(f, "%s=%s\n", key, value)
+	return err
+}
+
+func (c *Config) WriteSummary(value string) error {
+	if c.SummaryFile == "" {
+		return nil
+	}
+	f, err := os.OpenFile(c.SummaryFile, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("open GITHUB_STEP_SUMMARY: %w", err)
+	}
+	defer func() { _ = f.Close() }()
+	_, err = fmt.Fprintf(f, "%s\n", value)
 	return err
 }
 
