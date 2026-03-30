@@ -43,6 +43,27 @@ ShieldCI will detect your stack, generate the appropriate workflows, and open a 
 | `detected-stack` | Detected stack as JSON |
 | `generated-files` | Comma-separated list of generated file paths |
 
+## Using outputs in downstream steps
+
+```yaml
+- name: Generate pipelines
+  id: shieldci
+  uses: Richonn/ShieldCI@v1
+  with:
+    github-token: ${{ secrets.GH_TOKEN }}
+
+- name: Print detected stack
+  run: |
+    echo "Stack: ${{ steps.shieldci.outputs.detected-stack }}"
+    echo "PR: ${{ steps.shieldci.outputs.pr-url }}"
+
+- name: Conditional step based on detected stack
+  if: ${{ fromJson(steps.shieldci.outputs.detected-stack).language == 'go' }}
+  run: echo "Go project detected — run extra Go-specific steps here"
+```
+
+> `detected-stack` is a JSON string — use `fromJson()` to access individual fields (`language`, `docker`, `k8s`).
+
 ## Supported stacks
 
 | Language | CI | Lint | Test | Build |
