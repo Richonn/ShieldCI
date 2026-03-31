@@ -102,6 +102,11 @@ func Generate(stack *detect.StackConfig) ([]GeneratedFile, error) {
 			return nil, err
 		}
 		files = append(files, f)
+		f, err = render("templates/docker/sbom-docker.yml.tmpl", "sbom-docker.yml", data)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, f)
 	}
 
 	if stack.HasK8s {
@@ -119,6 +124,12 @@ func Generate(stack *detect.StackConfig) ([]GeneratedFile, error) {
 		}
 		files = append(files, f)
 	}
+
+	f, err = render("templates/base/sbom.yml.tmpl", "sbom.yml", data)
+	if err != nil {
+		return nil, err
+	}
+	files = append(files, f)
 
 	return files, nil
 }

@@ -82,6 +82,7 @@ Docker and Kubernetes workflows are generated automatically when detected.
 - **Gitleaks** — secret detection in git history
 - **Trivy** — container vulnerability scanning with SARIF upload to GitHub Security tab
 - **CodeQL / Semgrep** — static analysis (SAST)
+- **Syft** — SBOM generation (Software Bill of Materials)
 
 ### Semgrep custom rules
 
@@ -114,14 +115,23 @@ If you need reproducibility, pin to a specific version:
 - uses: Richonn/ShieldCI@v1.1.1
 ```
 
+## SBOM generation
+
+ShieldCI generates two SBOM workflows via [Syft](https://github.com/anchore/syft):
+
+- **`sbom.yml`** — always generated, analyses the repository source and dependencies
+- **`sbom-docker.yml`** — generated when a `Dockerfile` is detected, builds the image and generates a SBOM from it
+
+SBOM files are uploaded as artifacts and available from the Actions run summary.
+
 ## Roadmap
 
 - [x] Rust support
 - [x] `dry-run` mode
 - [x] Pinned action SHAs in generated workflows
 - [x] Semgrep custom rules support
+- [x] SBOM via Syft
 - [ ] Monorepo support
-- [ ] SBOM via Syft
 
 ## License
 
