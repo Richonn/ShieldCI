@@ -44,10 +44,10 @@ jobs:
     name: Semgrep — Static Analysis
     runs-on: ubuntu-latest
     container:
-      image: returntocorp/semgrep
+      image: semgrep/semgrep
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - run: semgrep ci --config=auto
+      - run: semgrep ci {{ if .Stack.HasSemgrep }}--config=./.semgrep/{{ else }}--config=auto{{ end }}
         env:
           SEMGREP_APP_TOKEN: {{ gh "secrets.SEMGREP_APP_TOKEN" }}
 {{ end -}}

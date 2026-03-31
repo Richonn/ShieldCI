@@ -11,6 +11,7 @@ type StackConfig struct {
 	Language       string
 	HasDocker      bool
 	HasK8s         bool
+	HasSemgrep     bool
 	BuildTool      string
 	EnableTrivy    bool
 	EnableGitleaks bool
@@ -55,6 +56,8 @@ func Detect(cfg *config.Config) (*StackConfig, error) {
 		dirExists(filepath.Join(dir, "manifests")) ||
 		dirExists(filepath.Join(dir, "helm")) ||
 		fileExists(filepath.Join(dir, "Chart.yaml"))
+
+	stack.HasSemgrep = dirExists(filepath.Join(dir, ".semgrep"))
 
 	return stack, nil
 }

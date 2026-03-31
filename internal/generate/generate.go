@@ -112,6 +112,14 @@ func Generate(stack *detect.StackConfig) ([]GeneratedFile, error) {
 		files = append(files, f)
 	}
 
+	if !stack.HasSemgrep && stack.SASTTool == "semgrep" {
+		f, err = render("templates/base/semgrep-example.yml.tmpl", ".semgrep/rules/example.yml", data)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, f)
+	}
+
 	return files, nil
 }
 
