@@ -1,7 +1,8 @@
 name: Update Major Tag
 
 on:
-  release: [published]
+  release:
+    types: [published]
 
 permissions:
   contents: write
