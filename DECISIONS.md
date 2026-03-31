@@ -45,6 +45,24 @@ GitHub blocks any write to `.github/workflows/` from `GITHUB_TOKEN`, regardless 
 
 ShieldCI therefore requires a PAT. This is the same constraint faced by any action that creates or modifies workflow files.
 
+## Pinned action SHAs in generated workflows
+
+All third-party GitHub Actions referenced in generated workflows are pinned to their commit SHA rather than a version tag. This protects against supply chain attacks where a tag could be silently moved to a different (potentially malicious) commit.
+
+Version comments (`# vX.Y.Z`) are included alongside each SHA so Dependabot can parse and update them automatically when new versions are released.
+
+ShieldCI's own CI workflows follow the same convention.
+
+## Semgrep image rename
+
+Semgrep rebranded their Docker image from `returntocorp/semgrep` to `semgrep/semgrep`. Generated workflows use the new image name.
+
+## Semgrep custom rules bootstrap
+
+When `sast-tool: semgrep` is selected and no `.semgrep/` directory is detected in the target repo, ShieldCI generates a `.semgrep/rules/example.yml` file with a commented starter rule. This lowers the barrier to writing custom rules while keeping the workflow functional out of the box.
+
+If `.semgrep/` already exists, ShieldCI passes `--config=.semgrep/` to use the existing rules instead of `--config=auto`.
+
 ## Contents API vs Git Data API
 
 The initial implementation used the Git Data API (blob → tree → commit → UpdateRef) to create a single atomic commit. This approach returned `403 Resource not accessible by integration` consistently despite correct permissions.

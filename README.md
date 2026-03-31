@@ -84,6 +84,12 @@ Docker and Kubernetes workflows are generated automatically when detected.
 - **CodeQL / Semgrep** — static analysis (SAST)
 - **Syft** — SBOM generation (Software Bill of Materials)
 
+### Semgrep custom rules
+
+When `sast-tool: semgrep` is set and no `.semgrep/` directory exists in the target repo, ShieldCI generates a `.semgrep/rules/example.yml` file with a commented example rule to get you started.
+
+If `.semgrep/` already exists, ShieldCI uses your existing rules (`--config=.semgrep/`) instead of the default community ruleset (`--config=auto`).
+
 ## Dry-run mode
 
 Set `dry-run: "true"` to preview the generated workflows in the GitHub Actions Job Summary without touching your repository:
