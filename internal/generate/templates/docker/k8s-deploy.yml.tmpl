@@ -6,6 +6,10 @@ on:
     types: [completed]
     branches: [main]
 
+concurrency:
+  group: {{ gh "github.workflow" }}-{{ gh "github.ref" }}
+  cancel-in-progress: false
+
 jobs:
   deploy-staging:
     name: Deploy to Staging

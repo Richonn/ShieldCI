@@ -178,7 +178,7 @@ Adjust scan depth with `max-depth` (default: `3`):
 - [x] Build caching in generated workflows (Go modules, pip/poetry, npm/yarn, maven/gradle)
 - [x] Multi-version matrix testing in generated workflows (Go, Rust, Java, Node, Python)
 - [ ] OpenSSF Scorecard integration
-- [ ] Concurrency groups in generated workflows (`cancel-in-progress`)
+- [x] Concurrency groups in generated workflows (`cancel-in-progress`)
 
 ## License
 

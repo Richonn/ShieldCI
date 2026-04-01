@@ -3,6 +3,10 @@ name: Test
 on:
   workflow_call:
 
+concurrency:
+  group: {{ gh "github.workflow" }}-{{ gh "github.ref" }}
+  cancel-in-progress: false
+
 jobs:
   test:
     name: Build & Test

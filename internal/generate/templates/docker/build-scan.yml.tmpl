@@ -3,6 +3,10 @@ name: Docker - Build & Scan
 on:
   workflow_call:
 
+concurrency:
+  group: {{ gh "github.workflow" }}-{{ gh "github.ref" }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
   security-events: write

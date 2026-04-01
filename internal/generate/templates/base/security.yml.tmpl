@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: '0 6 * * 1'
 
+concurrency:
+  group: {{ gh "github.workflow" }}-{{ gh "github.ref" }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
   security-events: write
