@@ -7,6 +7,7 @@ permissions:
   contents: read
   security-events: write
   packages: write
+  id-token: write
 
 jobs:
   build-and-scan:
@@ -18,24 +19,27 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
 
+      - name: Connect to registry
+        uses: docker/login-action@74ef4e56571ddc565adc1f9f16ed04e7e8f3b7bd # v3.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ gh "github.actor" }}
+          password: ${{ gh "secrets.GITHUB_TOKEN" }}
+
       - name: Build image
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
         with:
           context: .
-          push: false
-          tags: {{ gh "github.repository" }}:{{ gh "github.sha" }}
+          push: true
+          tags: ghcr.io/{{ gh "github.repository" }}:{{ gh "github.sha" }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          outputs: type=docker,dest=/tmp/image.tar
-
-      - name: Load image
-        run: docker load --input /tmp/image.tar
 
 {{ if .Stack.EnableTrivy -}}
       - name: Trivy vulnerability scan
         uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
         with:
-          image-ref: '{{ gh "github.repository" }}:{{ gh "github.sha" }}'
+          image-ref: 'ghcr.io/{{ gh "github.repository" }}:{{ gh "github.sha" }}'
           format: sarif
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
@@ -47,3 +51,9 @@ jobs:
         with:
           sarif_file: trivy-results.sarif
 {{ end -}}
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
+
+      - name: Run Cosign
+        run: cosign sign --yes ghcr.io/{{ gh "github.repository" }}:{{ gh "github.sha" }}
