@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -18,6 +19,7 @@ type Config struct {
 	BranchName     string
 	PRTitle        string
 	DryRun         bool
+	MaxDepth       int
 	RepoOwner      string
 	RepoName       string
 	WorkspaceDir   string
@@ -46,6 +48,7 @@ func Load() (*Config, error) {
 	c.PRTitle = getEnvDefault("INPUT_PR_TITLE", "[ShieldCI] Add CI/CD DevSecOps pipeline")
 
 	c.DryRun = parseBool(getEnvDefault("INPUT_DRY_RUN", "false"))
+	c.MaxDepth = parseInt(getEnvDefault("INPUT_MAX_DEPTH", ""))
 
 	repo := os.Getenv("GITHUB_REPOSITORY")
 	parts := strings.SplitN(repo, "/", 2)
@@ -102,4 +105,12 @@ func parseBool(s string) bool {
 	default:
 		return false
 	}
+}
+
+func parseInt(s string) int {
+	n, err := strconv.Atoi(strings.TrimSpace(s))
+	if err != nil || n < 1 {
+		return 3
+	}
+	return n
 }

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"text/template"
 
+	"github.com/Richonn/shieldci/internal/config"
 	"github.com/Richonn/shieldci/internal/detect"
 )
 
@@ -131,6 +132,35 @@ func Generate(stack *detect.StackConfig) ([]GeneratedFile, error) {
 	}
 	files = append(files, f)
 
+	return files, nil
+}
+
+func GenerateMonorepo(components []detect.Component, cfg *config.Config) ([]GeneratedFile, error) {
+	var files []GeneratedFile
+	for _, c := range components {
+		stack := &detect.StackConfig{
+			Language:       c.Language,
+			BuildTool:      c.BuildTool,
+			HasDocker:      c.HasDocker,
+			HasK8s:         c.HasK8s,
+			EnableTrivy:    cfg.EnableTrivy,
+			EnableGitleaks: cfg.EnableGitleaks,
+			EnableSAST:     cfg.EnableSAST,
+			SASTTool:       cfg.SASTTool,
+			RepoOwner:      cfg.RepoOwner,
+			RepoName:       cfg.RepoName,
+		}
+		generated, err := Generate(stack)
+		if err != nil {
+			return nil, err
+		}
+		name := filepath.Base(c.Path)
+		for i := range generated {
+			generated[i].Path = name + "-" + generated[i].Path
+		}
+
+		files = append(files, generated...)
+	}
 	return files, nil
 }
 

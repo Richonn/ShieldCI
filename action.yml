@@ -50,6 +50,10 @@ inputs:
     description: 'If true, print generated workflows to the Job Summary without creating a branch or PR'
     required: false
     default: false
+  max-depth:
+    description: 'Max directory depth for monorepo component detection'
+    required: false
+    default: '3'
 
 outputs:
   pr-url:
@@ -74,3 +78,4 @@ runs:
     INPUT_BRANCH_NAME: ${{ inputs.branch-name }}
     INPUT_PR_TITLE: ${{ inputs.pr-title }}
     INPUT_DRY_RUN: ${{ inputs.dry-run }}
+    INPUT_MAX_DEPTH: ${{ inputs.max-depth }}

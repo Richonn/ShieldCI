@@ -125,3 +125,89 @@ func TestK8sForced(t *testing.T) {
 	stack, _ := Detect(cfg(dir, "auto", "auto", true))
 	if !stack.HasK8s { t.Error("expected HasK8s = true") }
 }
+
+func monoCfg(dir string) *config.Config {
+	return &config.Config{WorkspaceDir: dir, Language: "auto", Docker: "auto"}
+}
+
+func TestDetectComponentsEmpty(t *testing.T) {
+	dir := t.TempDir()
+	components, err := DetectComponents(monoCfg(dir), 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(components) != 0 {
+		t.Errorf("expected 0 components, got %d", len(components))
+	}
+}
+
+func TestDetectComponentsSingleService(t *testing.T) {
+	dir := t.TempDir()
+	touch(t, filepath.Join(dir, "services", "api", "go.mod"))
+	components, err := DetectComponents(monoCfg(dir), 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(components) != 1 {
+		t.Fatalf("expected 1 component, got %d", len(components))
+	}
+	if components[0].Language != "go" {
+		t.Errorf("expected go, got %q", components[0].Language)
+	}
+}
+
+func TestDetectComponentsMultipleServices(t *testing.T) {
+	dir := t.TempDir()
+	touch(t, filepath.Join(dir, "services", "api", "go.mod"))
+	touch(t, filepath.Join(dir, "services", "worker", "Cargo.toml"))
+	touch(t, filepath.Join(dir, "tools", "inspector", "requirements.txt"))
+	components, err := DetectComponents(monoCfg(dir), 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(components) != 3 {
+		t.Errorf("expected 3 components, got %d", len(components))
+	}
+}
+
+func TestDetectComponentsExcluded(t *testing.T) {
+	dir := t.TempDir()
+	touch(t, filepath.Join(dir, "node_modules", "some-pkg", "package.json"))
+	touch(t, filepath.Join(dir, "vendor", "lib", "go.mod"))
+	components, err := DetectComponents(monoCfg(dir), 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(components) != 0 {
+		t.Errorf("expected 0 components (excluded dirs), got %d", len(components))
+	}
+}
+
+func TestDetectComponentsMaxDepth(t *testing.T) {
+	dir := t.TempDir()
+	// service at depth 4 — should not be detected with maxDepth=3
+	touch(t, filepath.Join(dir, "a", "b", "c", "d", "go.mod"))
+	components, err := DetectComponents(monoCfg(dir), 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(components) != 0 {
+		t.Errorf("expected 0 components beyond maxDepth, got %d", len(components))
+	}
+}
+
+func TestDetectComponentsWithDocker(t *testing.T) {
+	dir := t.TempDir()
+	touch(t, filepath.Join(dir, "services", "api", "go.mod"))
+	touch(t, filepath.Join(dir, "services", "api", "Dockerfile"))
+	components, err := DetectComponents(monoCfg(dir), 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(components) != 1 {
+		t.Fatalf("expected 1 component, got %d", len(components))
+	}
+	if !components[0].HasDocker {
+		t.Error("expected HasDocker = true")
+	}
+}

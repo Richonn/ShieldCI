@@ -35,6 +35,7 @@ ShieldCI will detect your stack, generate the appropriate workflows, and open a 
 | `branch-name` | ❌ | `shieldci/generated-workflows` | Branch to push generated workflows to |
 | `pr-title` | ❌ | `[ShieldCI] Add CI/CD DevSecOps pipeline` | PR title |
 | `dry-run` | ❌ | `false` | If `true`, print generated workflows to the Job Summary without creating a branch or PR |
+| `max-depth` | ❌ | `3` | Max directory depth for monorepo component detection |
 
 ## Outputs
 
@@ -124,6 +125,32 @@ ShieldCI generates two SBOM workflows via [Syft](https://github.com/anchore/syft
 
 SBOM files are uploaded as artifacts and available from the Actions run summary.
 
+## Monorepo support
+
+ShieldCI automatically detects monorepos by scanning subdirectories up to a configurable depth. A separate workflow is generated per detected component, named `<component>-ci.yml`, `<component>-lint.yml`, etc.
+
+**Supported monorepo layouts:**
+
+```
+my-monorepo/
+├── backend-services/
+│   ├── user-service/       # Go component → user-service-ci.yml
+│   └── media-service/      # Rust component → media-service-ci.yml
+└── tools/
+    └── inspector/          # Python component → inspector-ci.yml
+```
+
+The following directories are automatically excluded from scanning: `node_modules`, `vendor`, `dist`, `build`, `target`, `docs`, `scripts`, and others.
+
+Adjust scan depth with `max-depth` (default: `3`):
+
+```yaml
+- uses: Richonn/ShieldCI@v1
+  with:
+    github-token: ${{ secrets.GH_TOKEN }}
+    max-depth: '4'
+```
+
 ## Roadmap
 
 - [x] Rust support
@@ -131,7 +158,8 @@ SBOM files are uploaded as artifacts and available from the Actions run summary.
 - [x] Pinned action SHAs in generated workflows
 - [x] Semgrep custom rules support
 - [x] SBOM via Syft
-- [ ] Monorepo support
+- [x] Monorepo support
+- [ ] Image signing with Cosign
 
 ## License
 
