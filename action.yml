@@ -49,7 +49,7 @@ inputs:
   dry-run:
     description: 'If true, print generated workflows to the Job Summary without creating a branch or PR'
     required: false
-    default: false
+    default: 'false'
   max-depth:
     description: 'Max directory depth for monorepo component detection'
     required: false
