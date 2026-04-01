@@ -35,7 +35,17 @@ func run() error {
 	log.Printf("detected: language=%s docker=%v k8s=%v buildTool=%s",
 		stack.Language, stack.HasDocker, stack.HasK8s, stack.BuildTool)
 
-	files, err := generate.Generate(stack)
+	components, err := detect.DetectComponents(cfg, cfg.MaxDepth)
+	if err != nil {
+		return fmt.Errorf("detect components: %w", err)
+	}
+
+	var files []generate.GeneratedFile
+	if len(components) > 0 {
+		files, err = generate.GenerateMonorepo(components, cfg)
+	} else {
+		files, err = generate.Generate(stack)
+	}
 	if err != nil {
 		return fmt.Errorf("generate workflows: %w", err)
 	}
