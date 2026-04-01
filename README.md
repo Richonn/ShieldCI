@@ -116,6 +116,20 @@ If you need reproducibility, pin to a specific version:
 - uses: Richonn/ShieldCI@v1.1.1
 ```
 
+## Image signing with Cosign
+
+When a `Dockerfile` is detected, ShieldCI generates a Docker workflow that automatically signs the built image using [Cosign](https://github.com/sigstore/cosign) in keyless mode via GitHub Actions OIDC.
+
+No keys or secrets to manage — the signature is tied to the GitHub Actions identity and stored in the public [Rekor](https://rekor.sigstore.dev) transparency log.
+
+The image is pushed to `ghcr.io/<owner>/<repo>:<sha>` and signed immediately after the build. Anyone can verify the signature with:
+
+```sh
+cosign verify ghcr.io/<owner>/<repo>:<sha> \
+  --certificate-identity-regexp="https://github.com/<owner>/<repo>" \
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com"
+```
+
 ## SBOM generation
 
 ShieldCI generates two SBOM workflows via [Syft](https://github.com/anchore/syft):
@@ -159,7 +173,7 @@ Adjust scan depth with `max-depth` (default: `3`):
 - [x] Semgrep custom rules support
 - [x] SBOM via Syft
 - [x] Monorepo support
-- [ ] Image signing with Cosign
+- [x] Image signing with Cosign (keyless via OIDC)
 - [ ] SLSA provenance via `slsa-github-generator`
 - [ ] Build caching in generated workflows (Go modules, pip, cargo)
 - [ ] Multi-version matrix testing in generated workflows
