@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Richonn/shieldci/internal/config"
 	"github.com/Richonn/shieldci/internal/detect"
 )
 
@@ -121,6 +122,59 @@ func TestPRBodyWithDocker(t *testing.T) {
 	body := PRBody(s, files)
 	if !strings.Contains(body, "Docker") {
 		t.Error("expected Docker in PR body")
+	}
+}
+
+func TestGenerateMonorepoNoDuplicateNames(t *testing.T) {
+	components := []detect.Component{
+		{Path: "/workspace/services/api", Language: "go", BuildTool: "go"},
+		{Path: "/workspace/tools/api", Language: "node", BuildTool: "npm"},
+		{Path: "/workspace/backend/services/api", Language: "go", BuildTool: "go"},
+		{Path: "/workspace/frontend/services/api", Language: "node", BuildTool: "npm"},
+	}
+	cfg := &config.Config{
+		WorkspaceDir:   "/workspace",
+		EnableTrivy:    true,
+		EnableGitleaks: true,
+		EnableSAST:     true,
+		SASTTool:       "codeql",
+	}
+
+	files, err := GenerateMonorepo(components, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	seen := make(map[string]bool)
+	for _, f := range files {
+		if seen[f.Path] {
+			t.Errorf("duplicate file path: %s", f.Path)
+		}
+		seen[f.Path] = true
+	}
+}
+
+func TestGenerateMonorepoFilePrefix(t *testing.T) {
+	components := []detect.Component{
+		{Path: "/workspace/services/api", Language: "go", BuildTool: "go"},
+	}
+	cfg := &config.Config{
+		WorkspaceDir:   "/workspace",
+		EnableTrivy:    true,
+		EnableGitleaks: true,
+		EnableSAST:     true,
+		SASTTool:       "codeql",
+	}
+
+	files, err := GenerateMonorepo(components, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, f := range files {
+		if !strings.HasPrefix(f.Path, "services-api-") {
+			t.Errorf("expected prefix 'services-api-', got: %s", f.Path)
+		}
 	}
 }
 

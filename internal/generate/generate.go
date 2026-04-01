@@ -5,6 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"text/template"
 
 	"github.com/Richonn/shieldci/internal/config"
@@ -154,7 +155,11 @@ func GenerateMonorepo(components []detect.Component, cfg *config.Config) ([]Gene
 		if err != nil {
 			return nil, err
 		}
-		name := filepath.Base(c.Path)
+		rel, err := filepath.Rel(cfg.WorkspaceDir, c.Path)
+		if err != nil {
+			rel = filepath.Base(c.Path)
+		}
+		name := strings.ReplaceAll(rel, string(filepath.Separator), "-")
 		for i := range generated {
 			generated[i].Path = name + "-" + generated[i].Path
 		}
