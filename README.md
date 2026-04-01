@@ -160,6 +160,11 @@ Adjust scan depth with `max-depth` (default: `3`):
 - [x] SBOM via Syft
 - [x] Monorepo support
 - [ ] Image signing with Cosign
+- [ ] SLSA provenance via `slsa-github-generator`
+- [ ] Build caching in generated workflows (Go modules, pip, cargo)
+- [ ] Multi-version matrix testing in generated workflows
+- [ ] OpenSSF Scorecard integration
+- [ ] Concurrency groups in generated workflows (`cancel-in-progress`)
 
 ## License
 
