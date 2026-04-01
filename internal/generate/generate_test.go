@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Richonn/shieldci/internal/config"
 	"github.com/Richonn/shieldci/internal/detect"
 )
 
@@ -137,5 +138,98 @@ func TestPRBodyWithK8s(t *testing.T) {
 	body := PRBody(s, files)
 	if !strings.Contains(body, "Kubernetes") {
 		t.Error("expected Kubernetes in PR body")
+	}
+}
+
+func monoCfg(workspace string) *config.Config {
+	return &config.Config{
+		WorkspaceDir:   workspace,
+		EnableTrivy:    true,
+		EnableGitleaks: true,
+		EnableSAST:     true,
+		SASTTool:       "codeql",
+	}
+}
+
+// Two components with the same base name must not produce duplicate file paths.
+func TestGenerateMonorepoNoDuplicateNames(t *testing.T) {
+	components := []detect.Component{
+		{Path: "/workspace/services/api", Language: "go", BuildTool: "go"},
+		{Path: "/workspace/tools/api", Language: "node", BuildTool: "npm"},
+		{Path: "/workspace/backend/services/api", Language: "go", BuildTool: "go"},
+		{Path: "/workspace/frontend/services/api", Language: "node", BuildTool: "npm"},
+	}
+	files, err := GenerateMonorepo(components, monoCfg("/workspace"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	seen := make(map[string]bool)
+	for _, f := range files {
+		if seen[f.Path] {
+			t.Errorf("duplicate file path: %s", f.Path)
+		}
+		seen[f.Path] = true
+	}
+}
+
+// Prefix must use the full relative path with separators replaced by dashes.
+func TestGenerateMonorepoFilePrefix(t *testing.T) {
+	components := []detect.Component{
+		{Path: "/workspace/services/api", Language: "go", BuildTool: "go"},
+	}
+	files, err := GenerateMonorepo(components, monoCfg("/workspace"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range files {
+		if !strings.HasPrefix(f.Path, "services-api-") {
+			t.Errorf("expected prefix 'services-api-', got: %s", f.Path)
+		}
+	}
+}
+
+// Single-level component (no subdirectory) must still be prefixed correctly.
+func TestGenerateMonorepoSingleLevel(t *testing.T) {
+	components := []detect.Component{
+		{Path: "/workspace/api", Language: "go", BuildTool: "go"},
+	}
+	files, err := GenerateMonorepo(components, monoCfg("/workspace"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range files {
+		if !strings.HasPrefix(f.Path, "api-") {
+			t.Errorf("expected prefix 'api-', got: %s", f.Path)
+		}
+	}
+}
+
+// Mixed languages in a monorepo must each generate the right workflow files.
+func TestGenerateMonorepoMixedLanguages(t *testing.T) {
+	components := []detect.Component{
+		{Path: "/workspace/backend", Language: "go", BuildTool: "go"},
+		{Path: "/workspace/media", Language: "rust", BuildTool: "cargo"},
+		{Path: "/workspace/inspector", Language: "python", BuildTool: "pip"},
+	}
+	files, err := GenerateMonorepo(components, monoCfg("/workspace"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	hasPrefix := func(prefix string) bool {
+		for _, f := range files {
+			if strings.HasPrefix(f.Path, prefix) {
+				return true
+			}
+		}
+		return false
+	}
+	if !hasPrefix("backend-") {
+		t.Error("expected files prefixed with 'backend-'")
+	}
+	if !hasPrefix("media-") {
+		t.Error("expected files prefixed with 'media-'")
+	}
+	if !hasPrefix("inspector-") {
+		t.Error("expected files prefixed with 'inspector-'")
 	}
 }
