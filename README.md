@@ -175,7 +175,7 @@ Adjust scan depth with `max-depth` (default: `3`):
 - [x] Monorepo support
 - [x] Image signing with Cosign (keyless via OIDC)
 - [ ] SLSA provenance via `slsa-github-generator`
-- [ ] Build caching in generated workflows (Go modules, pip, cargo)
+- [x] Build caching in generated workflows (Go modules, pip/poetry, npm/yarn, maven/gradle)
 - [ ] Multi-version matrix testing in generated workflows
 - [ ] OpenSSF Scorecard integration
 - [ ] Concurrency groups in generated workflows (`cancel-in-progress`)
