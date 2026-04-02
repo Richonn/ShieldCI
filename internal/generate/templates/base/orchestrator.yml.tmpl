@@ -29,6 +29,7 @@ jobs:
 
   provenance:
     needs: docker
+    if: {{ gh "github.event_name" }} != 'pull_request'
     permissions:
       actions: read
       id-token: write
