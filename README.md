@@ -186,6 +186,7 @@ Adjust scan depth with `max-depth` (default: `3`):
 - [x] Workflow permission hardening (least privilege, job-level write scopes)
 - [x] Dockerfile base image SHA pinning
 - [x] Security policy (`SECURITY.md`)
+- [x] Multi-arch Docker builds (`linux/amd64`, `linux/arm64`)
 
 ## License
 
