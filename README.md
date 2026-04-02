@@ -3,6 +3,7 @@
 > GitHub Action that auto-generates hardened CI/CD DevSecOps pipelines and opens a PR with the generated workflows.
 
 [![CI](https://github.com/Richonn/ShieldCI/actions/workflows/ci.yml/badge.svg)](https://github.com/Richonn/ShieldCI/actions/workflows/ci.yml)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12352/badge)](https://www.bestpractices.dev/projects/12352)
 
 ## Quick start
 
