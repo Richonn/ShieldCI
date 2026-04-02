@@ -2,31 +2,52 @@ name: Docker
 
 on:
   workflow_call:
+    outputs:
+      digest:
+        description: "Image digest"
+        value: ${{ jobs.build-and-scan.outputs.digest }}
+      image:
+        description: "Image name (lowercase)"
+        value: ${{ jobs.build-and-scan.outputs.image }}
 
 permissions:
   contents: read
   security-events: write
+  packages: write
+  id-token: write
 
 jobs:
-  lint:
+  build-and-scan:
     name: Docker Build & Scan
     runs-on: ubuntu-latest
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+      image: ${{ steps.meta.outputs.image }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+      - name: Set image name
+        id: meta
+        run: echo "image=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+      - name: Login to ghcr.io
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build image
+        id: build
         uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           context: .
-          push: false
-          tags: shieldci:${{ github.sha }}
-          outputs: type=docker,dest=/tmp/shieldci.tar
-      - name: Load image
-        run: docker load --input /tmp/shieldci.tar
+          push: true
+          tags: ${{ steps.meta.outputs.image }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: Trivy scan
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
-          image-ref: shieldci:${{ github.sha }}
+          image-ref: ${{ steps.meta.outputs.image }}:${{ github.sha }}
           format: table
           severity: CRITICAL,HIGH
           ignore-unfixed: true
