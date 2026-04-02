@@ -12,10 +12,6 @@ concurrency:
 
 permissions:
   contents: read
-  security-events: write
-  packages: write
-  id-token: write
-  actions: read
 
 jobs:
   lint:

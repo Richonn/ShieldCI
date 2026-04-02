@@ -3,6 +3,9 @@ name: Security
 on:
   workflow_call:
 
+permissions:
+  contents: read
+
 jobs:
   gitleaks:
     name: Gitleaks

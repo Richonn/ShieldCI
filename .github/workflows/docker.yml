@@ -12,14 +12,16 @@ on:
 
 permissions:
   contents: read
-  security-events: write
-  packages: write
-  id-token: write
 
 jobs:
   build-and-scan:
     name: Docker Build & Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      packages: write
+      id-token: write
     outputs:
       digest: ${{ steps.build.outputs.digest }}
       image: ${{ steps.meta.outputs.image }}
