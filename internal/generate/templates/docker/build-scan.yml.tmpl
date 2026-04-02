@@ -2,6 +2,13 @@ name: Docker - Build & Scan
 
 on:
   workflow_call:
+    outputs:
+      digest:
+        description: "Image digest"
+        value: {{ gh "jobs.build-and-scan.outputs.digest" }}
+      image:
+        description: "Image name (lowercase)"
+        value: {{ gh "jobs.build-and-scan.outputs.image" }}
 
 permissions:
   contents: read
@@ -65,17 +72,3 @@ jobs:
 
       - name: Run Cosign
         run: cosign sign --yes {{ gh "steps.meta.outputs.image" }}:{{ gh "github.sha" }}
-
-  provenance:
-    needs: build-and-scan
-    permissions:
-      actions: read
-      id-token: write
-      packages: write
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a # v2.1.0
-    with:
-      image: {{ gh "needs.build-and-scan.outputs.image" }}
-      digest: {{ gh "needs.build-and-scan.outputs.digest" }}
-    secrets:
-      registry-username: {{ gh "github.actor" }}
-      registry-password: {{ gh "secrets.GITHUB_TOKEN" }}

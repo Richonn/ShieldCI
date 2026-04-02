@@ -28,5 +28,19 @@ jobs:
     needs: [lint, test]
     uses: ./.github/workflows/docker.yml
 
+  provenance:
+    needs: docker
+    permissions:
+      actions: read
+      id-token: write
+      packages: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a # v2.1.0
+    with:
+      image: ${{ needs.docker.outputs.image }}
+      digest: ${{ needs.docker.outputs.digest }}
+    secrets:
+      registry-username: ${{ github.actor }}
+      registry-password: ${{ secrets.GITHUB_TOKEN }}
+
   security:
     uses: ./.github/workflows/security.yml
