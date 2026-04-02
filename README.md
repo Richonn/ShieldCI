@@ -85,6 +85,7 @@ Docker and Kubernetes workflows are generated automatically when detected.
 - **CodeQL / Semgrep** — static analysis (SAST)
 - **Syft** — SBOM generation (Software Bill of Materials)
 - **OpenSSF Scorecard** — automated security posture scoring (weekly + on push), results uploaded to GitHub Security tab
+- **SLSA provenance** — cryptographic attestation of the build process (level 3), stored in the Rekor transparency log
 
 ### Semgrep custom rules
 
@@ -175,7 +176,7 @@ Adjust scan depth with `max-depth` (default: `3`):
 - [x] SBOM via Syft
 - [x] Monorepo support
 - [x] Image signing with Cosign (keyless via OIDC)
-- [ ] SLSA provenance via `slsa-github-generator`
+- [x] SLSA provenance via `slsa-github-generator` (level 3)
 - [x] Build caching in generated workflows (Go modules, pip/poetry, npm/yarn, maven/gradle)
 - [x] Multi-version matrix testing in generated workflows (Go, Rust, Java, Node, Python)
 - [x] OpenSSF Scorecard integration
