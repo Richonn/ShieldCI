@@ -181,6 +181,10 @@ Adjust scan depth with `max-depth` (default: `3`):
 - [x] Multi-version matrix testing in generated workflows (Go, Rust, Java, Node, Python)
 - [x] OpenSSF Scorecard integration
 - [x] Concurrency groups in generated workflows (`cancel-in-progress`)
+- [x] Go fuzz tests (`detect`, `generate`)
+- [x] Workflow permission hardening (least privilege, job-level write scopes)
+- [x] Dockerfile base image SHA pinning
+- [x] Security policy (`SECURITY.md`)
 
 ## License
 
