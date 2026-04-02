@@ -45,4 +45,7 @@ jobs:
       registry-password: ${{ secrets.GITHUB_TOKEN }}
 
   security:
+    permissions:
+      contents: read
+      security-events: write
     uses: ./.github/workflows/security.yml
