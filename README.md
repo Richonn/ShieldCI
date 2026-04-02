@@ -84,6 +84,7 @@ Docker and Kubernetes workflows are generated automatically when detected.
 - **Trivy** — container vulnerability scanning with SARIF upload to GitHub Security tab
 - **CodeQL / Semgrep** — static analysis (SAST)
 - **Syft** — SBOM generation (Software Bill of Materials)
+- **OpenSSF Scorecard** — automated security posture scoring (weekly + on push), results uploaded to GitHub Security tab
 
 ### Semgrep custom rules
 
@@ -177,7 +178,7 @@ Adjust scan depth with `max-depth` (default: `3`):
 - [ ] SLSA provenance via `slsa-github-generator`
 - [x] Build caching in generated workflows (Go modules, pip/poetry, npm/yarn, maven/gradle)
 - [x] Multi-version matrix testing in generated workflows (Go, Rust, Java, Node, Python)
-- [ ] OpenSSF Scorecard integration
+- [x] OpenSSF Scorecard integration
 - [x] Concurrency groups in generated workflows (`cancel-in-progress`)
 
 ## License
