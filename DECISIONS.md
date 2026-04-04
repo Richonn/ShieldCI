@@ -1,5 +1,66 @@
 # Technical Decisions
 
+## Architecture overview
+
+ShieldCI is structured as a Docker-based GitHub Action. The binary is a single statically-linked Go executable compiled at build time and embedded in an Alpine container.
+
+```
+action.yml                  ← GitHub Action entrypoint (inputs/outputs declaration)
+Dockerfile                  ← Multi-stage build: golang:alpine → alpine runtime
+cmd/shieldci/main.go        ← Entry point: reads env, calls detect → generate → pr
+internal/
+  config/config.go          ← Maps INPUT_* env vars to a typed Config struct
+  detect/detect.go          ← Inspects the workspace to determine language/docker/k8s
+  generate/generate.go      ← Renders embedded text/template files into workflow YAML
+  generate/templates/       ← Embedded workflow templates (base, go, node, python, java, rust, docker)
+  pr/pr.go                  ← GitHub API client: creates branch, commits files, opens PR
+```
+
+**Data flow:**
+
+1. `config` reads `INPUT_*` environment variables injected by the GitHub Actions runner
+2. `detect` walks the workspace filesystem to identify the language stack and optional components (Docker, Kubernetes, monorepo)
+3. `generate` renders the appropriate `text/template` files using the detected stack, producing workflow YAML strings
+4. `pr` uses the GitHub Contents API to commit each file to a new branch and open a pull request
+
+**Trust boundaries:**
+
+- The action runs inside a Docker container on the GitHub Actions runner (ephemeral, isolated VM)
+- It receives a PAT from the caller via an environment variable — the token is never logged or included in outputs
+- It writes only to `.github/workflows/` on the caller's repository via the GitHub API — no other filesystem or network access occurs
+- Templates are embedded at compile time; no external template fetching occurs at runtime
+
+## Assurance case
+
+### Threat model
+
+| Threat | Mitigation |
+|--------|-----------|
+| Supply chain attack via compromised action | All third-party actions pinned to full commit SHAs; Dependabot monitors for updates |
+| Supply chain attack via compromised base image | Dockerfile base images pinned by SHA digest |
+| Secret leakage via committed credentials | Gitleaks scans every commit; CONTRIBUTING.md mandates no secrets |
+| Container vulnerability exploitation | Trivy scans with `--exit-code 1` on CRITICAL/HIGH; Alpine minimal base image |
+| Dependency vulnerability exploitation | Dependabot weekly updates; Trivy Go module scanning |
+| Malicious input via action inputs | All inputs validated and typed via `config.go`; language/docker/kubernetes are enum values |
+| Build tampering | SLSA Level 3 provenance generated on every release; stored in Rekor transparency log |
+| Token over-permissioning | PAT scopes limited to `repo` + `workflow`; documented in README |
+| Workflow injection via generated YAML | Templates use `text/template` with no user-controlled interpolation into shell commands |
+
+### Secure design principles applied
+
+- **Least privilege**: job-level permissions in all CI workflows; Docker container runs with no escalated host privileges
+- **Defense in depth**: Gitleaks + CodeQL + Trivy + Dependabot + SLSA — multiple independent layers
+- **Minimal attack surface**: 2 direct Go dependencies; Alpine base; static binary with no runtime file dependencies
+- **Fail secure**: Trivy and CodeQL configured to fail the build on policy violations
+- **Separation of concerns**: token never touches the filesystem; written only to environment variable
+
+### Common implementation weaknesses countered
+
+- **CWE-20 (Improper Input Validation)**: All action inputs are validated in `config.go`; enum inputs reject unknown values
+- **CWE-312 (Cleartext Storage of Sensitive Information)**: PAT is stored in GitHub Secrets and passed as an env var; never written to disk or logs
+- **CWE-78 (OS Command Injection)**: The action makes no shell exec calls; all GitHub API operations use the typed Go client
+- **CWE-494 (Download of Code Without Integrity Check)**: All external actions and base images are pinned to SHAs
+
 ## Docker action vs composite action
 
 ShieldCI uses a Docker action instead of a composite action because:

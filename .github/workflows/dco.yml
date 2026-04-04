@@ -1,0 +1,22 @@
+name: DCO
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  dco:
+    name: DCO check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Check Signed-off-by
+        run: |
+          if ! git log --format="%B" -n 1 HEAD | grep -q "^Signed-off-by:"; then
+            echo "Commit $(git rev-parse HEAD) is missing Signed-off-by."
+            echo "Use 'git commit -s' to sign off your commits."
+            exit 1
+          fi
+          echo "OK: Signed-off-by found."

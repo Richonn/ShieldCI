@@ -16,4 +16,7 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - run: go test -race ./...
+      - run: go test -race -coverprofile=coverage.out ./...
+      - name: Coverage report (core packages)
+        run: |
+          go tool cover -func=coverage.out | grep -E "(detect|generate|total)"
