@@ -3,3 +3,4 @@ dist/
 *.test
 coverage.out
 TODO.md
+releases

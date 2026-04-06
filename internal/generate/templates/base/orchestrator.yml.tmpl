@@ -11,25 +11,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-{{ if ne .Stack.Language "unknown" -}}
+{{- if ne .Stack.Language "unknown" }}
   lint:
     uses: ./.github/workflows/lint.yml
 
   test:
     uses: ./.github/workflows/test.yml
 
-{{ end -}}
+{{- end }}
   security:
     uses: ./.github/workflows/security.yml
+{{- if .Stack.HasDocker }}
 
-{{ if .Stack.HasDocker -}}
   docker:
     needs: [{{ if ne .Stack.Language "unknown" }}lint, test, {{ end }}security]
     uses: ./.github/workflows/docker.yml
 
   provenance:
     needs: docker
-    if: {{ gh "github.event_name" }} != 'pull_request'
+    if: github.event_name != 'pull_request'
     permissions:
       actions: read
       id-token: write
@@ -41,10 +41,10 @@ jobs:
     secrets:
       registry-username: {{ gh "github.actor" }}
       registry-password: {{ gh "secrets.GITHUB_TOKEN" }}
+{{- end }}
+{{- if .Stack.HasK8s }}
 
-{{ end -}}
-{{ if .Stack.HasK8s -}}
   deploy:
     needs: [docker]
     uses: ./.github/workflows/k8s-deploy.yml
-{{ end -}}
+{{- end }}

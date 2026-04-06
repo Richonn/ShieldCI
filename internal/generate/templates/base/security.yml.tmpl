@@ -10,7 +10,7 @@ permissions:
   security-events: write
 
 jobs:
-{{ if .Stack.EnableGitleaks -}}
+{{- if .Stack.EnableGitleaks }}
   gitleaks:
     name: Gitleaks - Secret Detection
     runs-on: ubuntu-latest
@@ -21,10 +21,9 @@ jobs:
       - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
           GITHUB_TOKEN: {{ gh "secrets.GITHUB_TOKEN" }}
-{{ end -}}
-
-{{ if .Stack.EnableSAST -}}
-{{ if eq .Stack.SASTTool "codeql" -}}
+{{- end }}
+{{- if .Stack.EnableSAST }}
+{{- if eq .Stack.SASTTool "codeql" }}
   codeql:
     name: CodeQL - Static Analysis
     runs-on: ubuntu-latest
@@ -39,7 +38,7 @@ jobs:
           languages: {{ .Stack.Language }}
       - uses: github/codeql-action/autobuild@28deaeda66b76a05916b6923827895f2b14ab387 # v3.28.16
       - uses: github/codeql-action/analyze@28deaeda66b76a05916b6923827895f2b14ab387 # v3.28.16
-{{ else if eq .Stack.SASTTool "semgrep" -}}
+{{- else if eq .Stack.SASTTool "semgrep" }}
   semgrep:
     name: Semgrep — Static Analysis
     runs-on: ubuntu-latest
@@ -50,8 +49,8 @@ jobs:
       - run: semgrep ci {{ if .Stack.HasSemgrep }}--config=./.semgrep/{{ else }}--config=auto{{ end }}
         env:
           SEMGREP_APP_TOKEN: {{ gh "secrets.SEMGREP_APP_TOKEN" }}
-{{ end -}}
-{{ end }}
+{{- end }}
+{{- end }}
 
   scorecard:
     name: openSSF Scan

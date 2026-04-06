@@ -50,8 +50,8 @@ jobs:
           tags: {{ gh "steps.meta.outputs.image" }}:{{ gh "github.sha" }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+{{- if .Stack.EnableTrivy }}
 
-{{ if .Stack.EnableTrivy -}}
       - name: Trivy vulnerability scan
         uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
         with:
@@ -66,7 +66,7 @@ jobs:
         if: always()
         with:
           sarif_file: trivy-results.sarif
-{{ end -}}
+{{- end }}
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
