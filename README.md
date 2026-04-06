@@ -3,7 +3,7 @@
 > GitHub Action that auto-generates hardened CI/CD DevSecOps pipelines and opens a PR with the generated workflows.
 
 [![CI](https://github.com/Richonn/ShieldCI/actions/workflows/ci.yml/badge.svg)](https://github.com/Richonn/ShieldCI/actions/workflows/ci.yml)
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12352/badge)](https://www.bestpractices.dev/projects/12352)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12352/badge?v=2)](https://www.bestpractices.dev/projects/12352)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Richonn/ShieldCI/badge)](https://securityscorecards.dev/viewer/?uri=github.com/Richonn/ShieldCI)
 [![SLSA Level 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev/spec/v1.0/levels)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Richonn/ShieldCI)](https://goreportcard.com/report/github.com/Richonn/ShieldCI)
