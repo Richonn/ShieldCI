@@ -19,6 +19,7 @@ type StackConfig struct {
 	SASTTool       string
 	RepoOwner      string
 	RepoName       string
+	Prefix         string
 }
 
 type Component struct {

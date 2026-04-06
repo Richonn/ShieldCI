@@ -151,16 +151,17 @@ func GenerateMonorepo(components []detect.Component, cfg *config.Config) ([]Gene
 			RepoOwner:      cfg.RepoOwner,
 			RepoName:       cfg.RepoName,
 		}
-		generated, err := Generate(stack)
-		if err != nil {
-			return nil, err
-		}
-
 		rel, err := filepath.Rel(cfg.WorkspaceDir, c.Path)
 		if err != nil {
 			rel = filepath.Base(c.Path)
 		}
 		name := strings.ReplaceAll(rel, string(filepath.Separator), "-")
+		stack.Prefix = name + "-"
+
+		generated, err := Generate(stack)
+		if err != nil {
+			return nil, err
+		}
 
 		for i := range generated {
 			generated[i].Path = name + "-" + generated[i].Path
