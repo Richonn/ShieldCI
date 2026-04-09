@@ -33,12 +33,16 @@ jobs:
         run: |
           sha256sum shieldci-* > checksums.txt
           echo "hashes=$(sha256sum shieldci-* | base64 -w0)" >> $GITHUB_OUTPUT
-      - name: Create GitHub Release and upload artifacts
+      - name: Upload artifacts to GitHub Release
         run: |
-          gh release create "${{ github.ref_name }}" \
-            --title "${{ github.ref_name }}" \
-            --generate-notes \
-            shieldci-* checksums.txt
+          if gh release view "${{ github.ref_name }}" &>/dev/null; then
+            gh release upload "${{ github.ref_name }}" shieldci-* checksums.txt --clobber
+          else
+            gh release create "${{ github.ref_name }}" \
+              --title "${{ github.ref_name }}" \
+              --generate-notes \
+              shieldci-* checksums.txt
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
