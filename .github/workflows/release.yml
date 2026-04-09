@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build binaries
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      hashes: ${{ steps.hash.outputs.hashes }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        with:
+          go-version-file: go.mod
+      - name: Build binaries
+        run: |
+          GOOS=linux   GOARCH=amd64 go build -trimpath -o shieldci-linux-amd64   ./cmd/shieldci
+          GOOS=linux   GOARCH=arm64 go build -trimpath -o shieldci-linux-arm64   ./cmd/shieldci
+          GOOS=darwin  GOARCH=amd64 go build -trimpath -o shieldci-darwin-amd64  ./cmd/shieldci
+          GOOS=darwin  GOARCH=arm64 go build -trimpath -o shieldci-darwin-arm64  ./cmd/shieldci
+          GOOS=windows GOARCH=amd64 go build -trimpath -o shieldci-windows-amd64.exe ./cmd/shieldci
+      - name: Compute SHA256 hashes
+        id: hash
+        run: |
+          sha256sum shieldci-* > checksums.txt
+          echo "hashes=$(sha256sum shieldci-* | base64 -w0)" >> $GITHUB_OUTPUT
+      - name: Create GitHub Release and upload artifacts
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "${{ github.ref_name }}" \
+            --generate-notes \
+            shieldci-* checksums.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  provenance:
+    needs: build
+    permissions:
+      actions: read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
+    with:
+      base64-subjects: ${{ needs.build.outputs.hashes }}
+      upload-assets: true
