@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Richonn/ShieldCI/security/advisories/new
+    about: Do not open public issues for security vulnerabilities — use GitHub Security Advisories instead.
