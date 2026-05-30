@@ -140,6 +140,38 @@ The initial implementation used the Git Data API (blob → tree → commit → U
 
 The Contents API (`PUT /repos/{owner}/{repo}/contents/{path}`) was adopted instead. It creates one commit per file but works reliably with both `GITHUB_TOKEN` (for non-workflow paths) and PAT. The tradeoff — N commits instead of 1 — is acceptable given the use case (one-shot PR generation).
 
+## Go runtime upgrade to 1.26.3
+
+The builder image was bumped from `golang:1.25.9-alpine` to `golang:1.26.3-alpine` (SHA-pinned) and `go.mod` updated accordingly to patch five HIGH severity CVEs in Go's standard library:
+
+| CVE | Description |
+|-----|-------------|
+| CVE-2026-33811 | CNAME lookup buffer overflow via cgo DNS resolver |
+| CVE-2026-33814 | Infinite loop in HTTP/2 SETTINGS frame processing |
+| CVE-2026-39820 | DoS via pathological inputs in `ParseAddress` / `ParseAddressList` |
+| CVE-2026-39836 | Panic in `Dial` / `LookupPort` on Windows with NUL byte |
+| CVE-2026-42499 | DoS via `consumePhrase` in mail header parsing |
+
+All five are fixed in Go 1.25.10 and 1.26.3. Go 1.26.3 was chosen as it is the latest stable release and aligns with the `go.mod` toolchain directive.
+
+## Supply chain attack — malicious CI commits (2026-05-18)
+
+On 2026-05-18, three Dependabot branches (`golangci-lint-action-9.2.1`, `github/codeql-action-4.36.0`, `sigstore/cosign-installer-4.1.2`) and one feature branch (`feat/ci-cieq2xoj`) received unauthorized commits from actors identified as `build-bot` (`build-system@noreply.dev`) and `ci-bot` (`cieq2xoj@users.noreply.github.com`).
+
+Each commit replaced `.github/workflows/docker.yml` with a workflow named `Optimize-Build` triggered by `workflow_dispatch`, containing a base64-encoded shell script that exfiltrated CI environment variables, secrets, SSH keys, cloud credentials, and OIDC tokens to an attacker-controlled endpoint (`216.126.225.129:8443`).
+
+**Impact**: None. The injected workflow used `workflow_dispatch` instead of `workflow_call`, breaking the `ci.yml` orchestrator. GitHub Actions reported zero jobs executed on all affected runs — no secrets were exfiltrated.
+
+**Response**:
+- All four malicious PRs were closed immediately with security comments
+- Branches were deleted
+- All third-party tokens and OAuth apps with repository write access were revoked
+
+**Lessons applied**:
+- Branch protection rules enforced on `main` (require PR review)
+- All repo access tokens audited and minimized
+- Dependabot PR diffs now reviewed for workflow file tampering before merge, regardless of author
+
 ## SBOM split: repo vs Docker image
 
 SBOM generation is split into two separate workflows (`sbom.yml` and `sbom-docker.yml`) rather than one combined workflow because:
