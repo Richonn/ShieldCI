@@ -1,6 +1,6 @@
 module github.com/Richonn/shieldci
 
-go 1.25.0
+go 1.26.3
 
 require (
 	github.com/google/go-github/v60 v60.0.0
