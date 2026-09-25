@@ -11,7 +11,7 @@
 
 ## Quick start
 
-**1. Create a Personal Access Token** with scopes `repo` + `workflow` and store it as a secret (e.g. `GH_TOKEN`) in your repository.
+**1. Create a Personal Access Token** with scopes `repo` (or `content`) + `workflow` and store it as a secret (e.g. `GH_TOKEN`) in your repository.
 
 **2. Add the action to your workflow:**
 
