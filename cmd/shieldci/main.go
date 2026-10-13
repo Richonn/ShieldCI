@@ -58,7 +58,12 @@ func run() error {
 		return nil
 	}
 
-	body := generate.PRBody(stack, files)
+	var body string
+	if len(components) > 0 {
+		body = generate.PRBodyMonorepo(components, cfg.WorkspaceDir, files)
+	} else {
+		body = generate.PRBody(stack, files)
+	}
 
 	result, err := pr.CreateOrUpdatePR(ctx, cfg, stack, files, body)
 	if err != nil {
